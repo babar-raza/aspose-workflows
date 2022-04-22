@@ -31,8 +31,8 @@ jobs:
       with:
           repository: Aspose/products.aspose.com
           path: products.aspose.com
-          ref: "main"
-          token: 'REPO_TOKEN'
+          ref: main
+          token: ${{ secrets.GH_PAT }}
           submodules: true  # Fetch Hugo themes
           fetch-depth: 0    # Fetch all history for .GitInfo and .Lastmod
 
