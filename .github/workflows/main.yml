@@ -29,6 +29,8 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
       with:
+          repository: Aspose/products.aspose.com
+          path: products.aspose.com
           ref: "main"
           submodules: true  # Fetch Hugo themes
           fetch-depth: 0    # Fetch all history for .GitInfo and .Lastmod
