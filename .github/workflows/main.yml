@@ -27,11 +27,12 @@ jobs:
 
     # Step 1 - Checks-out your repository under $GITHUB_WORKSPACE
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
           repository: Aspose/products.aspose.com
           path: products.aspose.com
           ref: "main"
+          token: 'REPO_TOKEN'
           submodules: true  # Fetch Hugo themes
           fetch-depth: 0    # Fetch all history for .GitInfo and .Lastmod
 
