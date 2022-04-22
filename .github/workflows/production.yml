@@ -1,0 +1,442 @@
+# This is a basic workflow to help you get started with Actions
+
+name: PushToS3Production
+
+# Controls when the action will run. 
+on:
+  # Triggers the workflow on push or pull request events but only for the master branch
+  push:
+    branches: [ main ]
+    paths:
+      - 'content/**'
+  pull_request:
+    branches: [ main ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "deploy"
+  deploy:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+
+    # Step 1 - Checks-out your repository under $GITHUB_WORKSPACE
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+          ref: "main"
+          submodules: true  # Fetch Hugo themes
+          fetch-depth: 0    # Fetch all history for .GitInfo and .Lastmod
+
+    # Step 2 - Sets up the latest version of Hugo
+    - name: Setup Hugo
+      uses: peaceiris/actions-hugo@v2
+      with:
+          hugo-version: 'latest'
+          extended: true
+
+    # Step 3 - Clean and don't fail
+#    - name: Clean public directory
+#      run: rm -rf public
+
+    # Step 4 - Builds the site using the latest version of Hugo
+    # Also specifies the theme we want to use
+    - name: Install Dependicies1
+      run:  npm install -D --save autoprefixer
+
+    - name: Install Dependicies2
+      run:  npm install -D --save postcss-cli
+
+    - name: Find and Replace
+      uses: jacobtomlinson/gha-find-replace@master
+      with:
+        find: "url:"
+        replace: "url_ignore:"
+        include: "_index.md" # Will match all README.md files in any nested directory
+
+    - name: Find and Replace image url domain
+      uses: jacobtomlinson/gha-find-replace@master
+      with:
+        find: "logoImageSrc=\"https://www.aspose.cloud/"
+        replace: "logoImageSrc=\"https://cms.admin.containerize.com/"
+        include: "_index.md" # Will match all README.md files in any nested directory
+        
+    - uses: dorny/paths-filter@v2
+      id: filter
+      with:
+        filters: |
+          threed:
+            - 'content/3d/**'
+          barcode:
+            - 'content/barcode/**'
+          cad:
+            - 'content/cad/**'
+          cells:
+            - 'content/cells/**'
+          diagram:
+            - 'content/diagram/**'
+          drawing:
+            - 'content/drawing/**'
+          email:
+            - 'content/email/**'
+          finance:
+            - 'content/finance/**'
+          font:
+            - 'content/font/**'
+          gis:
+            - 'content/gis/**'
+          html:
+            - 'content/html/**'
+          imaging:
+            - 'content/imaging/**'
+          note:
+            - 'content/note/**'
+          ocr:
+            - 'content/ocr/**'
+          omr:
+            - 'content/omr/**'
+          page:
+            - 'content/page/**'
+          pdf:
+            - 'content/pdf/**'
+          psd:
+            - 'content/psd/**'
+          pub:
+            - 'content/pub/**'
+          slides:
+            - 'content/slides/**'
+          svg:
+            - 'content/svg/**'
+          tasks:
+            - 'content/tasks/**'
+          tex:
+            - 'content/tex/**'
+          total:
+            - 'content/total/**'
+          words:
+            - 'content/words/**'
+          zip:
+            - 'content/zip/**'
+            
+
+#     - name: Build Home
+#       run: hugo --config "./config-prod.toml" -c "content" -b "https://products.aspose.com" --disableKinds=page,section --minify
+
+#     - name: Deploy Home to S3
+#       run: hugo deploy --config "./config-prod.toml" --target "Home" 
+#       env:
+#         AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+#         AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS }}
+
+    - name: Build 3d
+      if: steps.filter.outputs.threed == 'true'
+      run: hugo --config "./config-prod-i18n.toml" -c "content/3d" -b "https://products.aspose.com/3d" --cleanDestinationDir --minify
+
+    - name: Deploy 3d to S3
+      if: steps.filter.outputs.threed == 'true'
+      run: hugo deploy --config "./config-prod-i18n.toml" --target "3d" --maxDeletes -1 --force
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS }}
+        
+    - name: Build barcode
+      if: steps.filter.outputs.barcode == 'true'
+      run: hugo --config "./config-prod.toml" -c "content/barcode" -b "https://products.aspose.com/barcode" --cleanDestinationDir --minify
+
+    - name: Deploy barcode to S3
+      if: steps.filter.outputs.barcode == 'true'
+      run: hugo deploy --config "./config-prod.toml" --target "barcode" --maxDeletes -1 --force
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS }}
+
+    - name: Build cad
+      if: steps.filter.outputs.cad == 'true'
+      run: hugo --config "./config-prod.toml" -c "content/cad" -b "https://products.aspose.com/cad" --cleanDestinationDir --minify
+
+    - name: Deploy cad to S3
+      if: steps.filter.outputs.cad == 'true'
+      run: hugo deploy --config "./config-prod.toml" --target "cad" --maxDeletes -1 --force
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS }}
+
+
+    - name: Build cells
+      if: steps.filter.outputs.cells == 'true'
+      run: hugo --config "./config-prod-i18n.toml" -c "content/cells" -b "https://products.aspose.com/cells" --cleanDestinationDir --minify
+
+    - name: Deploy cells to S3
+      if: steps.filter.outputs.cells == 'true'
+      run: hugo deploy --config "./config-prod-i18n.toml" --target "cells" --maxDeletes -1 --force
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS }}
+
+    - name: Build diagram
+      if: steps.filter.outputs.diagram == 'true'
+      run: hugo --config "./config-prod-i18n.toml" -c "content/diagram" -b "https://products.aspose.com/diagram" --cleanDestinationDir --minify
+
+    - name: Deploy diagram to S3
+      if: steps.filter.outputs.diagram == 'true'
+      run: hugo deploy --config "./config-prod-i18n.toml" --target "diagram" --maxDeletes -1 --force
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS }}
+
+    - name: Build drawing
+      if: steps.filter.outputs.drawing == 'true'
+      run: hugo --config "./config-prod.toml" -c "content/drawing" -b "https://products.aspose.com/drawing"  --cleanDestinationDir --minify
+
+    - name: Deploy drawing to S3
+      if: steps.filter.outputs.drawing == 'true'
+      run: hugo deploy --config "./config-prod.toml" --target "drawing" --maxDeletes -1 --force
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS }}
+
+    - name: Build email
+      if: steps.filter.outputs.email == 'true'
+      run: hugo --config "./config-prod.toml" -c "content/email" -b "https://products.aspose.com/email" --cleanDestinationDir --minify
+
+    - name: Deploy email to S3
+      if: steps.filter.outputs.email == 'true'
+      run: hugo deploy --config "./config-prod.toml" --target "email" --maxDeletes -1 --force
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS }}
+
+    - name: Build font
+      if: steps.filter.outputs.font == 'true'
+      run: hugo --config "./config-prod.toml" -c "content/font" -b "https://products.aspose.com/font" --cleanDestinationDir --minify
+
+    - name: Deploy font to S3
+      if: steps.filter.outputs.font == 'true'
+      run: hugo deploy --config "./config-prod.toml" --target "font" --maxDeletes -1 --force
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS }}
+
+    - name: Build finance
+      if: steps.filter.outputs.finance == 'true'
+      run: hugo --config "./config-prod-i18n.toml" -c "content/finance" -b "https://products.aspose.com/finance" --cleanDestinationDir --minify
+
+    - name: Deploy finance to S3
+      if: steps.filter.outputs.finance == 'true'
+      run: hugo deploy --config "./config-prod-i18n.toml" --target "finance" --maxDeletes -1 --force
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS }}
+
+    - name: Build gis
+      if: steps.filter.outputs.gis == 'true'
+      run: hugo --config "./config-prod.toml" -c "content/gis" -b "https://products.aspose.com/gis" --cleanDestinationDir --minify
+
+    - name: Deploy gis to S3
+      if: steps.filter.outputs.gis == 'true'
+      run: hugo deploy --config "./config-prod.toml" --target "gis" --maxDeletes -1 --force
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS }}
+
+    - name: Build html
+      if: steps.filter.outputs.html == 'true'
+      run: hugo --config "./config-prod.toml" -c "content/html" -b "https://products.aspose.com/html" --cleanDestinationDir --minify
+
+    - name: Deploy html to S3
+      if: steps.filter.outputs.html == 'true'
+      run: hugo deploy --config "./config-prod.toml" --target "html" --maxDeletes -1 --force
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS }}
+
+    - name: Build imaging
+      if: steps.filter.outputs.imaging == 'true'
+      run: hugo --config "./config-prod.toml" -c "content/imaging" -b "https://products.aspose.com/imaging" --cleanDestinationDir --minify
+
+    - name: Deploy imaging to S3
+      if: steps.filter.outputs.imaging == 'true'
+      run: hugo deploy --config "./config-prod.toml" --target "imaging" --maxDeletes -1 --force
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS }}
+    
+    - name: Build note
+      if: steps.filter.outputs.note == 'true'
+      run: hugo --config "./config-prod.toml" -c "content/note" -b "https://products.aspose.com/note" --cleanDestinationDir --minify
+
+    - name: Deploy note to S3
+      if: steps.filter.outputs.note == 'true'
+      run: hugo deploy --config "./config-prod.toml" --target "note" --maxDeletes -1 --force
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS }}
+    
+    - name: Build ocr
+      if: steps.filter.outputs.ocr == 'true'
+      run: hugo --config "./config-prod.toml" -c "content/ocr" -b "https://products.aspose.com/ocr" --cleanDestinationDir --minify
+
+    - name: Deploy ocr to S3
+      if: steps.filter.outputs.ocr == 'true'
+      run: hugo deploy --config "./config-prod.toml" --target "ocr" --maxDeletes -1 --force
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS }}
+    
+    - name: Build omr
+      if: steps.filter.outputs.omr == 'true'
+      run: hugo --config "./config-prod.toml" -c "content/omr" -b "https://products.aspose.com/omr" --cleanDestinationDir --minify
+
+    - name: Deploy omr to S3
+      if: steps.filter.outputs.omr == 'true'
+      run: hugo deploy --config "./config-prod.toml" --target "omr" --maxDeletes -1 --force
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS }}
+
+    - name: Build page
+      if: steps.filter.outputs.page == 'true'
+      run: hugo --config "./config-prod.toml" -c "content/page" -b "https://products.aspose.com/page" --cleanDestinationDir --minify
+
+    - name: Deploy page to S3
+      if: steps.filter.outputs.page == 'true'
+      run: hugo deploy --config "./config-prod.toml" --target "page" --maxDeletes -1 --force
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS }}
+
+    - name: Build pdf
+      if: steps.filter.outputs.pdf == 'true'
+      run: hugo --config "./config-prod.toml" -c "content/pdf" -b "https://products.aspose.com/pdf" --cleanDestinationDir --minify
+
+    - name: Deploy pdf to S3
+      if: steps.filter.outputs.pdf == 'true'
+      run: hugo deploy --config "./config-prod.toml" --target "pdf" --maxDeletes -1 --force
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS }}
+
+    - name: Build psd
+      if: steps.filter.outputs.psd == 'true'
+      run: hugo --config "./config-prod.toml" -c "content/psd" -b "https://products.aspose.com/psd" --cleanDestinationDir --minify
+
+    - name: Deploy psd to S3
+      if: steps.filter.outputs.psd == 'true'
+      run: hugo deploy --config "./config-prod.toml" --target "psd" --maxDeletes -1 --force
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS }}
+
+    - name: Build pub
+      if: steps.filter.outputs.pub == 'true'
+      run: hugo --config "./config-prod.toml" -c "content/pub" -b "https://products.aspose.com/pub" --cleanDestinationDir --minify
+
+    - name: Deploy pub to S3
+      if: steps.filter.outputs.pub == 'true'
+      run: hugo deploy --config "./config-prod.toml" --target "pub" --maxDeletes -1 --force
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS }}
+
+    - name: Build slides
+      if: steps.filter.outputs.slides == 'true'
+      run: hugo --config "./config-prod-i18n.toml" -c "content/slides" -b "https://products.aspose.com/slides" --cleanDestinationDir --minify
+
+    - name: Deploy slides to S3
+      if: steps.filter.outputs.slides == 'true'
+      run: hugo deploy --config "./config-prod-i18n.toml" --target "slides" --maxDeletes -1 --force
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS }}
+            
+    - name: Build svg
+      if: steps.filter.outputs.svg == 'true'
+      run: hugo --config "./config-prod.toml" -c "content/svg" -b "https://products.aspose.com/svg" --cleanDestinationDir --minify
+
+    - name: Deploy svg to S3
+      if: steps.filter.outputs.svg == 'true'
+      run: hugo deploy --config "./config-prod.toml" --target "svg" --maxDeletes -1 --force
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS }}
+        
+    - name: Build tasks
+      if: steps.filter.outputs.tasks == 'true'
+      run: hugo --config "./config-prod.toml" -c "content/tasks" -b "https://products.aspose.com/tasks" --cleanDestinationDir --minify
+
+    - name: Deploy tasks to S3
+      if: steps.filter.outputs.tasks == 'true'
+      run: hugo deploy --config "./config-prod.toml" --target "tasks" --maxDeletes -1 --force
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS }}
+        
+    - name: Build tex
+      if: steps.filter.outputs.tex == 'true'
+      run: hugo --config "./config-prod.toml" -c "content/tex" -b "https://products.aspose.com/tex" --cleanDestinationDir --minify
+
+    - name: Deploy tex to S3
+      if: steps.filter.outputs.tex == 'true'
+      run: hugo deploy --config "./config-prod.toml" --target "tex" --maxDeletes -1 --force
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS }}
+        
+    - name: Build total
+      if: steps.filter.outputs.total == 'true'
+      run: hugo --config "./config-prod.toml" -c "content/total" -b "https://products.aspose.com/total" --cleanDestinationDir --minify
+
+    - name: Deploy total to S3
+      if: steps.filter.outputs.total == 'true'
+      run: hugo deploy --config "./config-prod.toml" --target "total" --maxDeletes -1 --force
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS }}
+        
+    - name: Build words
+      if: steps.filter.outputs.words == 'true'
+      run: hugo --config "./config-prod.toml" -c "content/words" -b "https://products.aspose.com/words" --cleanDestinationDir --minify
+
+    - name: Deploy words to S3
+      if: steps.filter.outputs.words == 'true'
+      run: hugo deploy --config "./config-prod.toml" --target "words" --maxDeletes -1 --force
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS }}
+        
+    - name: Build zip
+      if: steps.filter.outputs.zip == 'true'
+      run: hugo --config "./config-prod.toml" -c "content/zip" -b "https://products.aspose.com/zip" --cleanDestinationDir --minify
+
+    - name: Deploy zip to S3
+      if: steps.filter.outputs.zip == 'true'
+      run: hugo deploy --config "./config-prod.toml" --target "zip" --maxDeletes -1 --force
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS }}
+        
+#     - name: get updated files
+#       run: |
+#         # This will check the modified .md files and get unique base paths for invalidation
+#         set +e
+#         FILES=($(git log --stat="1000" -1 | grep '|' | awk '{print "/"$1}' | grep -e '\.md$'))
+#         set -e
+#         [ -z "$FILES" ] && touch .updated_files && exit 0
+#         for file in $FILES; do
+#           p="$(dirname ${file})"
+#           echo $p | sed -e 's/\/content\///'
+#         done | sort | uniq | tr '\n' ' ' > .updated_files
+      
+#     - name: invalidate
+#       uses: chetan/invalidate-cloudfront-action@master
+#       env:
+#         DISTRIBUTION: ${{ secrets.AWS_DISTRIBUTION }}
+#         PATHS_FROM: .updated_files
+#         AWS_REGION: 'us-west-2'
+#         AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+#         AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS }}

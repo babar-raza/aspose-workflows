@@ -1,0 +1,443 @@
+# This is a basic workflow to help you get started with Actions
+
+name: PushToS3Stage
+
+# Controls when the action will run. 
+on:
+  # Triggers the workflow on push or pull request events but only for the master branch
+  push:
+    branches: [ main ]
+    paths:
+      - 'content/**'
+  pull_request:
+    branches: [ main ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "deploy"
+  deploy:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+
+    # Step 1 - Checks-out your repository under $GITHUB_WORKSPACE
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+          ref: "main"
+          submodules: true  # Fetch Hugo themes
+          fetch-depth: 0    # Fetch all history for .GitInfo and .Lastmod
+
+    # Step 2 - Sets up the latest version of Hugo
+    - name: Setup Hugo
+      uses: peaceiris/actions-hugo@v2
+      with:
+          hugo-version: 'latest'
+          extended: true
+
+    # Step 3 - Clean and don't fail
+#    - name: Clean public directory
+#      run: rm -rf public
+
+    # Step 4 - Builds the site using the latest version of Hugo
+    # Also specifies the theme we want to use
+    - name: Install Dependicies1
+      run:  npm install -D --save autoprefixer
+
+    - name: Install Dependicies2
+      run:  npm install -D --save postcss-cli
+
+    - name: Find and Replace
+      uses: jacobtomlinson/gha-find-replace@master
+      with:
+        find: "url:"
+        replace: "url_ignore:"
+        include: "_index.md" # Will match all README.md files in any nested directory
+    - name: Find and Replace domain name
+      uses: jacobtomlinson/gha-find-replace@master
+      with:
+        find: "products.aspose.com"
+        replace: "products-qa.aspose.com"
+        include: "_index.md" # Will match all README.md files in any nested directory
+    
+    - uses: dorny/paths-filter@v2
+      id: filter
+      with:
+        filters: |
+          threed:
+            - 'content/3d/**'
+          barcode:
+            - 'content/barcode/**'
+          cad:
+            - 'content/cad/**'
+          cells:
+            - 'content/cells/**'
+          diagram:
+            - 'content/diagram/**'
+          drawing:
+            - 'content/drawing/**'
+          email:
+            - 'content/email/**'
+          finance:
+            - 'content/finance/**'
+          font:
+            - 'content/font/**'
+          gis:
+            - 'content/gis/**'
+          html:
+            - 'content/html/**'
+          imaging:
+            - 'content/imaging/**'
+          note:
+            - 'content/note/**'
+          ocr:
+            - 'content/ocr/**'
+          omr:
+            - 'content/omr/**'
+          page:
+            - 'content/page/**'
+          pdf:
+            - 'content/pdf/**'
+          psd:
+            - 'content/psd/**'
+          pub:
+            - 'content/pub/**'
+          slides:
+            - 'content/slides/**'
+          svg:
+            - 'content/svg/**'
+          tasks:
+            - 'content/tasks/**'
+          tex:
+            - 'content/tex/**'
+          total:
+            - 'content/total/**'
+          words:
+            - 'content/words/**'
+          zip:
+            - 'content/zip/**'
+            
+
+#     - name: Build Home
+#       run: hugo -c "content" -b "https://products-qa.aspose.com" --disableKinds=page,section --minify
+
+#     - name: Deploy Home to S3
+#       run: hugo deploy --target "Home" 
+#       env:
+#         AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+#         AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS }}
+
+    - name: Build 3d
+      if: steps.filter.outputs.threed == 'true'
+      run: hugo -c "content/3d" -b "https://products-qa.aspose.com/3d" --minify
+
+    - name: Deploy 3d to S3
+      if: steps.filter.outputs.threed == 'true'
+      run: hugo deploy --target "3d" --maxDeletes -1
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS }}
+        
+    - name: Build barcode
+      if: steps.filter.outputs.barcode == 'true'
+      run: hugo -c "content/barcode" -b "https://products-qa.aspose.com/barcode" --minify
+
+    - name: Deploy barcode to S3
+      if: steps.filter.outputs.barcode == 'true'
+      run: hugo deploy --target "barcode" --maxDeletes -1
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS }}
+
+    - name: Build cad
+      if: steps.filter.outputs.cad == 'true'
+      run: hugo -c "content/cad" -b "https://products-qa.aspose.com/cad" --minify
+
+    - name: Deploy cad to S3
+      if: steps.filter.outputs.cad == 'true'
+      run: hugo deploy --target "cad" --maxDeletes -1
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS }}
+
+
+    - name: Build cells
+      if: steps.filter.outputs.cells == 'true'
+      run: hugo -c "content/cells" -b "https://products-qa.aspose.com/cells" --minify
+
+    - name: Deploy cells to S3
+      if: steps.filter.outputs.cells == 'true'
+      run: hugo deploy --target "cells" --maxDeletes -1
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS }}
+
+    - name: Build diagram
+      if: steps.filter.outputs.diagram == 'true'
+      run: hugo -c "content/diagram" -b "https://products-qa.aspose.com/diagram" --minify
+
+    - name: Deploy diagram to S3
+      if: steps.filter.outputs.diagram == 'true'
+      run: hugo deploy --target "diagram" --maxDeletes -1
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS }}
+
+    - name: Build drawing
+      if: steps.filter.outputs.drawing == 'true'
+      run: hugo -c "content/drawing" -b "https://products-qa.aspose.com/drawing" --minify
+
+    - name: Deploy drawing to S3
+      if: steps.filter.outputs.drawing == 'true'
+      run: hugo deploy --target "drawing" --maxDeletes -1
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS }}
+
+    - name: Build email
+      if: steps.filter.outputs.email == 'true'
+      run: hugo -c "content/email" -b "https://products-qa.aspose.com/email" --minify
+
+    - name: Deploy email to S3
+      if: steps.filter.outputs.email == 'true'
+      run: hugo deploy --target "email" --maxDeletes -1
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS }}
+
+    - name: Build font
+      if: steps.filter.outputs.font == 'true'
+      run: hugo -c "content/font" -b "https://products-qa.aspose.com/font" --minify
+
+    - name: Deploy font to S3
+      if: steps.filter.outputs.font == 'true'
+      run: hugo deploy --target "font" --maxDeletes -1
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS }}
+
+    - name: Build finance
+      if: steps.filter.outputs.finance == 'true'
+      run: hugo -c "content/finance" -b "https://products-qa.aspose.com/finance" --minify
+
+    - name: Deploy finance to S3
+      if: steps.filter.outputs.finance == 'true'
+      run: hugo deploy --target "finance" --maxDeletes -1
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS }}
+
+    - name: Build gis
+      if: steps.filter.outputs.gis == 'true'
+      run: hugo -c "content/gis" -b "https://products-qa.aspose.com/gis" --minify
+
+    - name: Deploy gis to S3
+      if: steps.filter.outputs.gis == 'true'
+      run: hugo deploy --target "gis" --maxDeletes -1
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS }}
+
+    - name: Build html
+      if: steps.filter.outputs.html == 'true'
+      run: hugo -c "content/html" -b "https://products-qa.aspose.com/html" --minify
+
+    - name: Deploy html to S3
+      if: steps.filter.outputs.html == 'true'
+      run: hugo deploy --target "html" --maxDeletes -1
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS }}
+
+    - name: Build imaging
+      if: steps.filter.outputs.imaging == 'true'
+      run: hugo -c "content/imaging" -b "https://products-qa.aspose.com/imaging" --minify
+
+    - name: Deploy imaging to S3
+      if: steps.filter.outputs.imaging == 'true'
+      run: hugo deploy --target "imaging" --maxDeletes -1
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS }}
+    
+    - name: Build note
+      if: steps.filter.outputs.note == 'true'
+      run: hugo -c "content/note" -b "https://products-qa.aspose.com/note" --minify
+
+    - name: Deploy note to S3
+      if: steps.filter.outputs.note == 'true'
+      run: hugo deploy --target "note" --maxDeletes -1
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS }}
+    
+    - name: Build ocr
+      if: steps.filter.outputs.ocr == 'true'
+      run: hugo -c "content/ocr" -b "https://products-qa.aspose.com/ocr" --minify
+
+    - name: Deploy ocr to S3
+      if: steps.filter.outputs.ocr == 'true'
+      run: hugo deploy --target "ocr" --maxDeletes -1
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS }}
+    
+    - name: Build omr
+      if: steps.filter.outputs.omr == 'true'
+      run: hugo -c "content/omr" -b "https://products-qa.aspose.com/omr" --minify
+
+    - name: Deploy omr to S3
+      if: steps.filter.outputs.omr == 'true'
+      run: hugo deploy --target "omr" --maxDeletes -1
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS }}
+
+    - name: Build page
+      if: steps.filter.outputs.page == 'true'
+      run: hugo -c "content/page" -b "https://products-qa.aspose.com/page" --minify
+
+    - name: Deploy page to S3
+      if: steps.filter.outputs.page == 'true'
+      run: hugo deploy --target "page" --maxDeletes -1
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS }}
+
+    - name: Build pdf
+      if: steps.filter.outputs.pdf == 'true'
+      run: hugo -c "content/pdf" -b "https://products-qa.aspose.com/pdf" --minify
+
+    - name: Deploy pdf to S3
+      if: steps.filter.outputs.pdf == 'true'
+      run: hugo deploy --target "pdf" --maxDeletes -1
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS }}
+
+    - name: Build psd
+      if: steps.filter.outputs.psd == 'true'
+      run: hugo -c "content/psd" -b "https://products-qa.aspose.com/psd" --minify
+
+    - name: Deploy psd to S3
+      if: steps.filter.outputs.psd == 'true'
+      run: hugo deploy --target "psd" --maxDeletes -1
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS }}
+
+    - name: Build pub
+      if: steps.filter.outputs.pub == 'true'
+      run: hugo -c "content/pub" -b "https://products-qa.aspose.com/pub" --minify
+
+    - name: Deploy pub to S3
+      if: steps.filter.outputs.pub == 'true'
+      run: hugo deploy --target "pub" --maxDeletes -1
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS }}
+
+    - name: Build slides
+      if: steps.filter.outputs.slides == 'true'
+      run: hugo -c "content/slides" -b "https://products-qa.aspose.com/slides" --minify
+
+    - name: Deploy slides to S3
+      if: steps.filter.outputs.slides == 'true'
+      run: hugo deploy --target "slides" --maxDeletes -1
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS }}
+            
+    - name: Build svg
+      if: steps.filter.outputs.svg == 'true'
+      run: hugo -c "content/svg" -b "https://products-qa.aspose.com/svg" --minify
+
+    - name: Deploy svg to S3
+      if: steps.filter.outputs.svg == 'true'
+      run: hugo deploy --target "svg" --maxDeletes -1
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS }}
+        
+    - name: Build tasks
+      if: steps.filter.outputs.tasks == 'true'
+      run: hugo -c "content/tasks" -b "https://products-qa.aspose.com/tasks" --minify
+
+    - name: Deploy tasks to S3
+      if: steps.filter.outputs.tasks == 'true'
+      run: hugo deploy --target "tasks" --maxDeletes -1
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS }}
+        
+    - name: Build tex
+      if: steps.filter.outputs.tex == 'true'
+      run: hugo -c "content/tex" -b "https://products-qa.aspose.com/tex" --minify
+
+    - name: Deploy tex to S3
+      if: steps.filter.outputs.tex == 'true'
+      run: hugo deploy --target "tex" --maxDeletes -1
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS }}
+        
+    - name: Build total
+      if: steps.filter.outputs.total == 'true'
+      run: hugo -c "content/total" -b "https://products-qa.aspose.com/total" --minify
+
+    - name: Deploy total to S3
+      if: steps.filter.outputs.total == 'true'
+      run: hugo deploy --target "total" --maxDeletes -1
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS }}
+        
+    - name: Build words
+      if: steps.filter.outputs.words == 'true'
+      run: hugo -c "content/words" -b "https://products-qa.aspose.com/words" --minify
+
+    - name: Deploy words to S3
+      if: steps.filter.outputs.words == 'true'
+      run: hugo deploy --target "words" --maxDeletes -1
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS }}
+        
+    - name: Build zip
+      if: steps.filter.outputs.zip == 'true'
+      run: hugo -c "content/zip" -b "https://products-qa.aspose.com/zip" --minify
+
+    - name: Deploy zip to S3
+      if: steps.filter.outputs.zip == 'true'
+      run: hugo deploy --target "zip" --maxDeletes -1
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS }}
+        
+#     - name: get updated files
+#       run: |
+#         # This will check the modified .md files and get unique base paths for invalidation
+#         set +e
+#         FILES=($(git log --stat="1000" -1 | grep '|' | awk '{print "/"$1}' | grep -e '\.md$'))
+#         set -e
+#         [ -z "$FILES" ] && touch .updated_files && exit 0
+#         for file in $FILES; do
+#           p="$(dirname ${file})"
+#           echo $p | sed -e 's/\/content\///'
+#         done | sort | uniq | tr '\n' ' ' > .updated_files
+      
+#     - name: invalidate
+#       uses: chetan/invalidate-cloudfront-action@master
+#       env:
+#         DISTRIBUTION: ${{ secrets.AWS_DISTRIBUTION }}
+#         PATHS_FROM: .updated_files
+#         AWS_REGION: 'us-west-2'
+#         AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+#         AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS }}
+
+
